@@ -6,69 +6,44 @@ plugins {
 }
 
 group = 'org.example'
-version = '0.1.0'
+version = '0.2.0' // ОБЯЗАТЕЛЬНО новая версия, если уже публиковала старую
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    // Тестирование
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
 }
 
 application {
-    // Укажи путь к твоему основному классу
     mainClass = 'org.example.TodoApp'
 }
 
-test {
+tasks.test {
     useJUnitPlatform()
 }
 
-// ----------------------------------------------------
-// Настройки ShadowJar (fat jar)
-// ----------------------------------------------------
-tasks.build {
-    dependsOn tasks.named('shadowJar')
-}
-
+// ShadowJar конфигурация
 tasks.named('shadowJar') {
     archiveBaseName.set('todo-app')
-    archiveVersion.set(project.version.toString())  // добавляем версию в имя файла
-    archiveClassifier.set('') // убираем -all, чтобы имя было todo-app-0.2.0.jar
+    archiveVersion.set(project.version.toString())
+    archiveClassifier.set('')
 }
 
-
-// ----------------------------------------------------
-// Исправление зависимостей между задачами
-// ----------------------------------------------------
-tasks.named('distZip') {
-    dependsOn tasks.named('shadowJar')
+// Задачи publish зависят от shadowJar
+tasks.named('publish') {
+    dependsOn(tasks.named('shadowJar'))
 }
 
-tasks.named('distTar') {
-    dependsOn tasks.named('shadowJar')
-}
-
-tasks.named('startScripts') {
-    dependsOn tasks.named('shadowJar')
-}
-
-tasks.named('startShadowScripts') {
-    dependsOn tasks.named('jar')
-}
-
+// Maven Publish конфигурация
 publishing {
     publications {
         mavenJava(MavenPublication) {
-            groupId = 'org.example'
             artifactId = 'todo-app'
-            version = project.version
-
-            artifact(tasks.shadowJar) {
-                classifier = null // имя вида todo-app-0.5.0.jar
+            artifact(tasks.named('shadowJar').get()) {
+                classifier = null
             }
         }
     }
@@ -77,8 +52,8 @@ publishing {
             name = "GitHubPackages"
             url = uri("https://maven.pkg.github.com/anastasianikola/Practic2-todo-app")
             credentials {
-                username = project.findProject("gpr.user") ?: System.getenv("GITHUB_ACTOR")
-                password = project.findProject("gpr.key") ?: System.getenv("GITHUB_TOKEN")
+                username = System.getenv("GITHUB_ACTOR")
+                password = System.getenv("GITHUB_TOKEN")
             }
         }
     }
