@@ -36,9 +36,10 @@ tasks.build {
 
 tasks.named('shadowJar') {
     archiveBaseName.set('todo-app')
-    archiveClassifier.set('')
-    archiveVersion.set(project.version.toString())
+    archiveVersion.set(project.version.toString())  // добавляем версию в имя файла
+    archiveClassifier.set('') // убираем -all, чтобы имя было todo-app-0.2.0.jar
 }
+
 
 // ----------------------------------------------------
 // Исправление зависимостей между задачами
