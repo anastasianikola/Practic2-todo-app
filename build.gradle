@@ -6,7 +6,8 @@ plugins {
 }
 
 group = 'org.example'
-version = '0.2.0' // ОБЯЗАТЕЛЬНО новая версия, если уже публиковала старую
+version = project.findProperty("version") ?: "0.4.0"
+
 
 repositories {
     mavenCentral()
@@ -25,19 +26,29 @@ tasks.test {
     useJUnitPlatform()
 }
 
+// -----------------------------
 // ShadowJar конфигурация
+// -----------------------------
 tasks.named('shadowJar') {
     archiveBaseName.set('todo-app')
     archiveVersion.set(project.version.toString())
-    archiveClassifier.set('')
+    archiveClassifier.set('') // убираем -all, чтобы файл был todo-app-0.4.0.jar
 }
 
-// Задачи publish зависят от shadowJar
+// -----------------------------
+// Задачи build и publish зависят от shadowJar
+// -----------------------------
+tasks.named('build') {
+    dependsOn(tasks.named('shadowJar'))
+}
+
 tasks.named('publish') {
     dependsOn(tasks.named('shadowJar'))
 }
 
+// -----------------------------
 // Maven Publish конфигурация
+// -----------------------------
 publishing {
     publications {
         mavenJava(MavenPublication) {
